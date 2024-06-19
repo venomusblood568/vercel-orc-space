@@ -1,7 +1,6 @@
 const express = require('express');
 const axios = require('axios');
 const FormData = require('form-data');
-const fs = require('fs');
 const multer = require('multer');
 const cors = require('cors');
 const path = require('path');
@@ -13,8 +12,9 @@ const OCR_API_KEY = 'K89996003288957'; // Replace with your OCR.space API key
 // Middleware for handling CORS
 app.use(cors());
 
-// Multer middleware for handling file uploads
-const upload = multer({ dest: 'uploads/' });
+// Multer middleware for handling file uploads in memory
+const storage = multer.memoryStorage();
+const upload = multer({ storage: storage });
 
 // Serve static files from the 'frontend' directory
 app.use(express.static(path.join(__dirname, '../frontend')));
@@ -33,7 +33,7 @@ app.post('/api/ocr', upload.single('image'), async (req, res) => {
     formData.append('apikey', OCR_API_KEY);
     formData.append('language', 'eng');
     formData.append('isOverlayRequired', 'true');
-    formData.append('file', fs.createReadStream(image.path), {
+    formData.append('file', image.buffer, {
       contentType: image.mimetype,
       filename: image.originalname,
     });
